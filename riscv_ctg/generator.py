@@ -1,6 +1,7 @@
 # See LICENSE.incore for details
 import random
 from collections import defaultdict
+from typing import Union
 from constraint import *
 import re
 from riscv_ctg.constants import *
@@ -44,7 +45,9 @@ from riscv_ctg.dsp_function import *
 
 twos_xlen = lambda x: twos(x,xlen)
 
-def toint(x: str):
+def toint(x: Union[str, int]):
+    if isinstance(x, int):
+        return x
     if '0x' in x:
         return int(x,16)
     else:
@@ -296,7 +299,7 @@ class Generator():
         to ensure that all those registers occur atleast once in the respective
         operand/destination location in the instruction. These contraints are
         then supplied to the solver for solutions
-        
+
         If randomization is enabled we use the ``MinConflictsSolver`` solver to
         find solutions.
 
@@ -304,7 +307,7 @@ class Generator():
         than the first one, there will be No Solution. To solve that problem, some code
         is written which will find the required register in the condition and generate the
         solution normally.
-        
+
         :param cgf: a covergroup in cgf format containing the set of coverpoints to be satisfied.
 
         :type cgf: dict
@@ -891,7 +894,8 @@ class Generator():
             return cover_hits
         i = 0
 
-        for instr in instr_dict:
+        for iii, instr in enumerate(instr_dict):
+            print(f"instr: {iii} of {len(instr_dict)}")
             unique = False
             skip_val = False
             if instr['inst'] in cgf['mnemonics']:
@@ -1265,7 +1269,7 @@ class Generator():
             # instr_dict is already in the desired format for Zacas dcas instructions
             if 'bit_width' in self.opnode or 'dcas_profile' in self.opnode:
                 return instr_dict
-        
+
         # Fix all K instructions to be unsigned to output unsigned hex values into the test. Its
         # only a cosmetic difference and has no impact on coverage
         is_unsigned = any('IZk' in isa for isa in self.opnode['isa'])
